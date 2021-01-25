@@ -4,7 +4,7 @@ Donate link: https://www.oik-plugins.com/oik/oik-donate/
 Tags:
 Requires at least: 5.6
 Tested up to: 5.6
-Stable tag: 1.1.0
+Stable tag: 0.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -142,8 +142,10 @@ of server responses with different server configurations.
 1. wp-top12 in action - no not really
 
 == Upgrade Notice ==
+= 0.0.0 = 
+Use slog bloat instead of wp-top12 for server response performance analysis.
 
 == Changelog ==
-= 1.1.0 =
+= 0.0.0 =
 * Changed: Cloned from wp-top12 v1.1.1
 
