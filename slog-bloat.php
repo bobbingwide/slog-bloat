@@ -32,12 +32,36 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 slog_bloat_plugin_loaded();
 
 /**
+ * Initialisation when slog-bloat plugin file loaded
+ */
+function slog_bloat_plugin_loaded() {
+	add_action( "init", "slog_bloat_init", 22 );
+	//add_action( 'init', 'slog_bloat_block_init' );
+	add_action( "oik_loaded", "slog_bloat_oik_loaded" );
+	add_action( 'slog_loaded', 'slog_bloat_slog_loaded');
+	//add_action( "oik_add_shortcodes", "slog_bloat_oik_add_shortcodes" );
+	add_action( "admin_notices", "slog_bloat_activation" );
+	add_action( 'admin_menu', 'slog_bloat_admin_menu', 11 );
+}
+
+/**
  * Implement the "init" action for slog-bloat
  *
  * Even though "oik" may not yet be loaded, let other plugins know that we've been loaded.
  */
 function slog_bloat_init() {
 	do_action( "slog_bloat_loaded" );
+}
+
+/**
+ * If slog's been loaded then we should be able to display slog-bloat's admin page.
+ * We just need to get involved in the autoloading.
+ */
+function slog_bloat_slog_loaded() {
+	$libs = oik_lib_fallback( dirname( __FILE__ ) . '/libs' );
+	//print_r( $libs );
+	slog_enable_autoload();
+	add_action( 'admin_menu', 'slog_bloat_admin_menu', 11 );
 }
 
 /**
@@ -77,18 +101,6 @@ function slog_bloat_activation() {
 	$depends = "oik:3.3";
 	oik_plugin_lazy_activation( __FILE__, $depends, "oik_plugin_plugin_inactive" );
 }
-
-/**
- * Initialisation when slog-bloat plugin file loaded
- */
-function slog_bloat_plugin_loaded() {
-	add_action( "init", "slog_bloat_init" );
-	//add_action( 'init', 'slog_bloat_block_init' );
-	add_action( "oik_loaded", "slog_bloat_oik_loaded" );
-	//add_action( "oik_add_shortcodes", "slog_bloat_oik_add_shortcodes" );
-	add_action( "admin_notices", "slog_bloat_activation" );
-}
-
 
 /**
  * Registers all block assets so that they can be enqueued through the block editor
@@ -173,6 +185,39 @@ function slog_bloat_dynamic_block( $attributes ) {
 }
 
 
+/**
+ * Note: slog-bloat is dependent upon oik-bwtrace which itself uses & delivers the shared library files we need.
+ */
+
+function slog_bloat_admin_menu() {
+	if ( oik_require_lib( "oik-admin" ) ) {
+		$hook=add_options_page( "Slog-bloat admin", "Slog-bloat admin", "manage_options", "slog-bloat", "slog_bloat_admin_page" );
+	} else {
+		//bw_trace2( "Slog admin not possible");
+	}
+}
+
+/**
+ * Slog admin page.
+ * - Form
+ * - Chart
+ * - CSV Table
+ * In whatever order seems most appropriate.
+ */
+
+function slog_bloat_admin_page() {
+	// If slog implements autoload will it find Slog-Bloat's classes?
+	if ( class_exists( 'Slog_Bloat_Admin')) {
+		$slog_bloat_admin_page=new Slog_Bloat_Admin();
+		$slog_bloat_admin_page->process();
+	} else {
+
+		bw_trace2();
+		gob();
+	}
+
+
+}
 
 
 

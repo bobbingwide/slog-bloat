@@ -11,7 +11,7 @@
 
 
 /**
- * 
+ *
  Array
 (
     [0] => /oik-plugins/oik/?bwscid1=4&bwscid2=8&bwscid4=3&bwscid5=7
@@ -34,8 +34,8 @@
 )
 
 /**
- * Original version 
- *  
+ * Original version
+ *
  * 0- request URI
  * 1 - AJAX action
  * 2 - elapsed ( final figure )
@@ -52,26 +52,26 @@
  * 13 - Query time
  * 14 - Trace records
  * 15 - Elapsed
- * 16 - Date - ISO 8601 date 
+ * 16 - Date - ISO 8601 date
  *
  * OR it may end
- * 
+ *
  * 14 - Trace records
  * 15 - Remote address ( IP address )
  * 16 - Elapsed
- * 17 - Date - ISO 8601 date 
- 
+ * 17 - Date - ISO 8601 date
+
  * OR it may end
- * 
+ *
  * 14 tracefile - which may be null
  * 15 trace records - a number
- * 16 - Remote address ( IP address ) 
+ * 16 - Remote address ( IP address )
  * 17 - Elapsed
  * 18 - Date - ISO 8601 date
 */
 
 
-class VT_row_basic { 
+class VT_row_basic {
 
 //class Trans {
   //private $trans = null;
@@ -98,7 +98,7 @@ class VT_row_basic {
   public $isodate; //20
 	public $useragent; // 21
 	public $method; // 22
-  
+
   public $suri;   // Stripped URI
 	public $suritl; // Top level part of stripped URI
 	public $suril;  // Last part of stripped URI
@@ -170,29 +170,29 @@ class VT_row_basic {
 	$this->uri_parser();
 	$this->set_request_type();
   }
-	
+
 	/**
 	 * Parse the URI
-	 * 
-	 * 
+	 *
+	 *
 	 * Create separate fields
-	 * - stripped URI ( suri ) 
+	 * - stripped URI ( suri )
 	 * - top level ( suritl)
 	 * - bottom level ( suril )
-	 * 
+	 *
 	 */
 	function uri_parser() {
 		//echo $this->uri . PHP_EOL;
-		
+
     list( $this->suri, $qparms, $blah ) = explode( "?", $this->uri . "???" , 3 );
-		$suri = trim( $this->suri, "/" ); 
-    $blah = explode( "/", $suri ); 
+		$suri = trim( $this->suri, "/" );
+    $blah = explode( "/", $suri );
 	  $this->suritl = $blah[0];
 		$this->suril = end( $blah );
 		unset( $blah );
 		//echo $this->suritl . PHP_EOL;
 		//echo $this->suril . PHP_EOL;
-		
+
 		//gob();
 	}
 
@@ -297,7 +297,7 @@ class VT_row_basic {
 			$feoa = $this->spam_or_admin( $feoa );
 		}
 		return '-' . $feoa;
-		
+
 	}
 
 	/**
