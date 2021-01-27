@@ -129,7 +129,7 @@ class Slog_Bloat_Admin {
 	 * This assumes that the file is available for download.
 	 */
 	function get_vt() {
-		$this->file_contents=file_get_contents( $this->get_working_filename( $this->slog_summary_file ) );
+		$this->file_contents=file_get_contents( $this->slog_summary_file );
 		BW_::p( "File size:" . strlen( $this->file_contents ) );
 	}
 
