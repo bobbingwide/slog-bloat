@@ -35,7 +35,7 @@ $driver = new VT_driver();
 
 $file = oik_batch_query_value_from_argv( 1, 'working/2021/filtered.csv' );
 $url = oik_batch_query_value_from_argv( 2, 'https://ebps.co.uk');
-$loops = oik_batch_query_value_from_argv( 2, 1 );
+$loops = oik_batch_query_value_from_argv( 2, 1000 );
 
 $driver->prepare( $file, $url, $loops );
 $driver->loop();

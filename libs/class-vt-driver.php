@@ -12,6 +12,10 @@ class VT_driver {
 
 	public $lines;
 
+	/**
+	 * @var loops - really should be called requests.
+	 */
+
 	public $loops;
 
 	public $total;
@@ -51,18 +55,18 @@ class VT_driver {
 
 
 	public function loop() {
-		static $count = 0;
-		for ( $loop = 1; $loop<=$this->loops; $loop++ ) {
-			$count = 0;
-			$lines = 0;
-			for ( $lines = 0; $lines< $this->lines; $lines++ ) {
+		$loop = 0;
+		while (  $loop < $this->loops ) {
+			for ( $lines = 0; ( $lines< $this->lines)  && ( $loop < $this->loops ); $lines++ ) {
+				$loop++;
 				$line = $this->file[ $lines ];
 				$vt = str_getcsv( $line );
 				if ( 0 !== strpos( $vt[0], "/wp-admin" ) ) {
-					echo $loop .  "." . $count++ . '/' .  $this->total . " " . $vt[0] . PHP_EOL;
+					echo $loop . '/' .  $this->loops . " " . $vt[0] . PHP_EOL;
 					$this->process_request( $vt[0], $line );
 				}
 			}
+
 		}
 	}
 
@@ -156,7 +160,7 @@ class VT_driver {
 	}
 
 	function write_ct( $line ) {
-		$file = ABSPATH . "bwtrace.ct." .  date( "md" );
+		$file = ABSPATH . "bwtrace.ct." .  date( "Ymd" );
 		bw_write( $file, $line );
 	}
 
@@ -172,7 +176,7 @@ class VT_driver {
 			bw_trace2( $this->request, "request is expected", false );
 			$this->result = bw_retrieve_result( $this->request );
 		}
-		bw_trace2( $this->result, "result" );
+		bw_trace2( $this->result, "result", false, BW_TRACE_VERBOSE);
 		return( $this->result );
 	}
 

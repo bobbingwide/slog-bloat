@@ -233,16 +233,46 @@ class Slog_Bloat_Admin {
 	 *
 	 */
 	function slog_compare() {
-		BW_::p( 'Comparing' );
+		BW_::p( 'Comparing results...' );
 		//print_r( $this->slog_files );
+		$contents = [];
 		$slogger=slog_admin_slog_reporter();
 		foreach ( $this->slog_files as $file ) {
 			if ( $file ) {
 				$options=$this->get_reporter_options( $file );
-				$content=$slogger->run_report( $options );
+				$contents[$file] = $slogger->run_report( $options );
 			}
 		}
-		$this->display_chart( $content);
+
+		if ( count( $contents ) > 1 ) {
+			$csv = $this->get_merged_contents( $contents );
+			$this->display_chart( $csv );
+			$this->display_table( $csv );
+		} else {
+			// Display individual reports.
+			foreach ( $contents as $content ) {
+				$this->display_chart( $content );
+			}
+		}
+	}
+
+
+	function get_merged_contents( $contents ) {
+		//print_r( $contents );
+		$csv = "Elapsed," . implode(',', $this->slog_files) . "\n";
+		if ( count( $contents ) > 1 ) {
+			$merger=new CSV_merger();
+			$merger->set_echo( false );
+			foreach ( $contents as $key=>$content ) {
+				//$content=str_replace( '<', '', $content );
+				//$content=str_replace( '>', '', $content );
+				$merger->append_csv( $content );
+			}
+			//$merger->ksort();
+			$csv.=$merger->report();
+		}
+		return $csv;
+
 	}
 
 	function display_chart( $content ) {
@@ -252,7 +282,32 @@ class Slog_Bloat_Admin {
 			$output=sb_chart_block_shortcode( $options, $content, 'chartjs' );
 			e( $output );
 		}
-		e( $content );
+
+		//e( $content );
+	}
+
+	/**
+	 * Displays the CSV as a table.
+	 *
+	 * Just use oik-bbw/csv logic!
+	 * @param $content
+	 */
+	function display_table( $content ) {
+		$content_array = explode( "\n", $content );
+		$heading = array_shift( $content_array );
+		$headings = str_getcsv( $heading );
+		stag( 'table', 'wide-fat' );
+		stag( 'thead');
+		bw_tablerow( $headings, 'tr', 'th' );
+		etag( 'thead');
+		stag( 'tbody');
+		foreach ( $content_array as $line ) {
+			$tablerow = str_getcsv( $line );
+			bw_tablerow( $tablerow );
+		}
+		etag( 'tbody');
+		etag( 'table');
+		bw_flush();
 	}
 
 	function get_reporter_options( $file ) {
