@@ -205,7 +205,7 @@ class Slog_Bloat_Admin {
 
 	function save_vt() {
 		$written=file_put_contents( $this->get_working_filename( $this->slog_download_file ), $this->file_contents );
-		BW_::p( "Output:" . $this->file_contents );
+		BW_::p( "Download:" . $this->slog_download_file );
 		BW_::p( "Written:" . $written );
 	}
 

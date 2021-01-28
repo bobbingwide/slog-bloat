@@ -32,10 +32,11 @@ oik_require( "includes/oik-remote.inc" );
 oik_require( 'libs/class-vt-driver.php', 'slog-bloat');
 
 $driver = new VT_driver();
-
-$file = oik_batch_query_value_from_argv( 1, 'working/2021/filtered.csv' );
+$loops = oik_batch_query_value_from_argv( 1, 1000 );
 $url = oik_batch_query_value_from_argv( 2, 'https://ebps.co.uk');
-$loops = oik_batch_query_value_from_argv( 2, 1000 );
+$file = oik_batch_query_value_from_argv( 3, 'working/2021/filtered.csv' );
+
+
 
 $driver->prepare( $file, $url, $loops );
 $driver->loop();

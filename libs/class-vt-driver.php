@@ -85,7 +85,7 @@ class VT_driver {
 		echo strlen(  $result );
 		$timeend = microtime( true );
 		$this->timetotal = $timeend - $this->timestart;
-		$this->report_vt( $uri, $result );
+		$report_vt=$this->report_vt( $uri, $result );
 		echo $uri . " " . $this->timetotal . " " . $this->cache_time .  PHP_EOL;
 	}
 

@@ -40,7 +40,7 @@ function slog_bloat_plugin_loaded() {
 	add_action( "oik_loaded", "slog_bloat_oik_loaded" );
 	add_action( 'slog_loaded', 'slog_bloat_slog_loaded');
 	//add_action( "oik_add_shortcodes", "slog_bloat_oik_add_shortcodes" );
-	add_action( "admin_notices", "slog_bloat_activation" );
+	//add_action( "admin_notices", "slog_bloat_activation" );
 	add_action( 'admin_menu', 'slog_bloat_admin_menu', 11 );
 }
 
@@ -50,6 +50,7 @@ function slog_bloat_plugin_loaded() {
  * Even though "oik" may not yet be loaded, let other plugins know that we've been loaded.
  */
 function slog_bloat_init() {
+
 	do_action( "slog_bloat_loaded" );
 }
 
@@ -59,6 +60,7 @@ function slog_bloat_init() {
  */
 function slog_bloat_slog_loaded() {
 	$libs = oik_lib_fallback( dirname( __FILE__ ) . '/libs' );
+	oik_init();
 	//print_r( $libs );
 	slog_enable_autoload();
 	add_action( 'admin_menu', 'slog_bloat_admin_menu', 11 );
@@ -187,13 +189,17 @@ function slog_bloat_dynamic_block( $attributes ) {
 
 /**
  * Note: slog-bloat is dependent upon oik-bwtrace which itself uses & delivers the shared library files we need.
+ * If neither slog nor oik-bwtrace are active then we can't do anything.
  */
-
 function slog_bloat_admin_menu() {
-	if ( oik_require_lib( "oik-admin" ) ) {
-		$hook=add_options_page( "Slog-bloat admin", "Slog-bloat admin", "manage_options", "slog-bloat", "slog_bloat_admin_page" );
+	if ( function_exists( 'oik_require_lib' ) ) {
+		if ( oik_require_lib( "oik-admin" ) ) {
+			$hook=add_options_page( "Slog-bloat admin", "Slog-bloat admin", "manage_options", "slog-bloat", "slog_bloat_admin_page" );
+		} else {
+			//bw_trace2( "Slog admin not possible");
+		}
 	} else {
-		//bw_trace2( "Slog admin not possible");
+		echo "Oops";
 	}
 }
 
@@ -211,9 +217,9 @@ function slog_bloat_admin_page() {
 		$slog_bloat_admin_page=new Slog_Bloat_Admin();
 		$slog_bloat_admin_page->process();
 	} else {
-
+		BW_::p( 'Slog not activated?');
+		bw_flush();
 		bw_trace2();
-		gob();
 	}
 
 

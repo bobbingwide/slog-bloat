@@ -1,44 +1,47 @@
-<?php // (C) Copyright Bobbing Wide 2015-2017
+<?php
 
 /**
- * Class Object_base 
- * 
+ * @copyright (C) Copyright Bobbing Wide 2015-2021
+ * @package slog-bloat
+ *
+ * Class Object_base
+ *
  * Implements a serialized array that can be loaded from a file
  * and saved back to a file
  * It could therefore also be saved as wp_options permanently or perhaps cached in transients
- * 
+ *
  * Classes that extend this are:
- * - Object_Sorter 
+ * - Object_Sorter
  * - Object_Grouper
  * - etcetera
- * 
+ *
  */
- 
+
 class Object_base {
 
-	/** 
+	/**
 	 * This is the array of objects that we're sorting
 	 */
 	public $objects;
-	
+
 	/**
 	 * The constructor creates an empty set
 	 */
 	public function __construct() {
 		$this->objects = array();
 	}
-	
+
 	/**
 	 * Populate the array of objects to sort
 	 *
 	 * We assume the array is homogeneous
-	 * 
+	 *
 	 * @param array $objects array of objects
 	 */
 	public function populate( $objects ) {
 		$this->objects = $objects;
 	}
-	
+
 	/**
 	 * Return a subset of items
 	 *
@@ -54,10 +57,10 @@ class Object_base {
 		}
 		return( $result_set );
 	}
-	
+
 	/**
 	 * Load the information from a local cache - serialized version
-	 * 
+	 *
 	 * @param string $file file name - may be fully qualified or relative
 	 */
 	function load_from_file( $file ) {
@@ -68,7 +71,7 @@ class Object_base {
 		$this->objects = $objects;
 		return( $loaded );
 	}
-	
+
 	/**
 	 * Save the information to a local cache
 	 *
@@ -78,16 +81,16 @@ class Object_base {
 		$string = serialize( $this->objects );
 		$saved = file_put_contents( $file , $string );
 	}
-	
+
 	function export_csv( $fields ) {
 		gob();
-	
+
 	}
-	
+
 	function import_csv() {
 		gob();
-	
+
 	}
-	
-	
+
+
 }

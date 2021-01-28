@@ -125,6 +125,7 @@ class Object_Grouper extends Object_base {
 		//$this->asCSV_field_percentage_elapsed_accumulative = 0;
 	}
 
+
 	function reset_percentage_accumulatives() {
 		$this->asCSV_field_percentage_count_accumulative = 0;
 		$this->asCSV_field_percentage_elapsed_accumulative = 0;
@@ -134,7 +135,7 @@ class Object_Grouper extends Object_base {
 	 *
 	 */
 	public function groupby( $key, $subset=null ) {
-		$this->reset();
+		//$this->reset();
 		$this->key( $key );
 		if ( $subset ) {
 			$this->subset( $subset );
@@ -194,6 +195,16 @@ class Object_Grouper extends Object_base {
 		}
 	}
 
+	/**
+	 * Initialise groups so that we don't get gaps in the x-axis.
+	 *
+	 */
+	function init_groups( $callback, $low=0, $increment=0.05, $high=6 ) {
+		for ( $elapsed = $low; $elapsed <= $high; $elapsed += $increment ) {
+			$index = call_user_func( $callback, $elapsed );
+			$this->groups[ $index ] = 0;
+		}
+	}
 
 
 
@@ -327,7 +338,11 @@ class Object_Grouper extends Object_base {
 	}
 
 	function asCSV_field_elapsed( $key, $field ) {
-		return $this->elapsed[ $key];
+		if ( isset( $this->elapsed[ $key] ) ) {
+			return $this->elapsed[ $key ];
+		} else {
+			return 0;
+		}
 	}
 
 	/**
@@ -344,8 +359,12 @@ class Object_Grouper extends Object_base {
 		} else {
 			$item=$field;
 		}
-		$elapsed = $this->elapsed[ $key ];
-		$average = $elapsed / $item;
+		$elapsed = isset( $this->elapsed[ $key ] ) ? $this->elapsed[ $key ] : 0;
+		if ( $item ) {
+			$average=$elapsed / $item;
+		} else {
+			$average = 0;
+		}
 		return $average;
 	}
 
@@ -360,7 +379,13 @@ class Object_Grouper extends Object_base {
 	}
 
 	function asCSV_field_percentage_elapsed( $key, $field ) {
-		$percentage = ( $this->elapsed[ $key ] * 100) / $this->total_time;
+		if ( $this->total_time ) {
+			$elapsed = isset( $this->elapsed[ $key ] ) ? $this->elapsed[ $key ] : 0;
+			$percentage = ( $elapsed * 100) / $this->total_time;
+		} else {
+			$percentage = 0;
+		}
+
 		//$this->asCSV_field_percentage_elapsed_accumulative += $percentage;
 		return $percentage;
 	}
@@ -372,8 +397,11 @@ class Object_Grouper extends Object_base {
 	}
 
 	function asCSV_field_percentage_elapsed_accumulative( $key, $field ) {
-		$percentage = ( $this->elapsed[ $key ] * 100) / $this->total_time;
-		$this->asCSV_field_percentage_elapsed_accumulative += $percentage;
+		if ( $this->total_time ) {
+			$elapsed =isset( $this->elapsed[ $key ] ) ? $this->elapsed[ $key ] : 0;
+			$percentage =( $elapsed * 100 ) / $this->total_time;
+			$this->asCSV_field_percentage_elapsed_accumulative+=$percentage;
+		}
 		return $this->asCSV_field_percentage_elapsed_accumulative;
 	}
 

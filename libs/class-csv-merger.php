@@ -1,6 +1,8 @@
-<?php // (C) Copyright Bobbing Wide 2015
+<?php
 
 /**
+ * @copyright (C) Copyright Bobbing Wide 2015-2021
+ * @package wp-top12 / slog-bloat
  * CSV_merger
  *
  * Allows you to merge multiple associative arrays
@@ -37,8 +39,40 @@ class CSV_merger {
 		$this->echo = $echo;
 	}
 
+	/**
+	 * Appends the contents of a CSV file.
+	 *
+	 * CSV source expected to be:
+	 *
+	 * ```
+	 * col1,col2\n
+	 * key1,value1\n
+	 * key2,value2\n
+	 * ```
+	 *
+	 * @param $csv
+	 */
+	function append_csv( $csv ) {
+		$csv = trim( $csv );
+		$lines = explode( "\n",$csv );
+		$appendages = [];
+		$heading = array_shift( $lines );
+		foreach ( $lines as $key => $line ) {
+
+			$fields = explode( ',', $line);
+			if ( count( $fields ) < 2 ) {
+				// We don't expect there to be fewer than 2 cells.
+			} else {
+				$appendages[ $fields[0] ] = $fields[1];
+			}
+		}
+		$this->append( $appendages);
+	}
+
 	function append( $appendages ) {
-		echo "Appendages: " . count( $appendages ) . PHP_EOL;
+		if ( $this->echo ) {
+			echo "Appendages: " . count( $appendages ) . PHP_EOL;
+		}
 		foreach ( $appendages as $key => $appendage ) {
 			$this->merged[ $key ][ $this->array_index ] = $appendage;
 		}
@@ -46,7 +80,10 @@ class CSV_merger {
 	}
 
 	function report_count() {
-   echo "Merged:" . count( $this->merged ) . PHP_EOL;
+		if ( $this->echo ) {
+			echo "Merged:" . count( $this->merged ) . PHP_EOL;
+		}
+		return count( $this->merged );
 	}
 
 	function report_csv( $array ) {
@@ -73,12 +110,23 @@ class CSV_merger {
 	}
 
 	function report() {
-		$this->report_csv( $this->merged );
+		$output = $this->report_csv( $this->merged );
+		return $output;
 	}
 
 	function report_accum() {
-		$this->report_csv( $this->accum );
+		$output = $this->report_csv( $this->accum );
+		return $output;
 	}
+
+	function asort() {
+		asort( $this->merged);
+	}
+
+	function ksort() {
+		ksort( $this->merged);
+	}
+
 
 	function sort() {
 		uksort( $this->merged, array( $this, "natural_key_sort" ) );
