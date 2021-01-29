@@ -2,7 +2,7 @@
 ![banner](https://raw.githubusercontent.com/bobbingwide/slog-bloat/master/assets/slog-bloat-banner-772x250.jpg)
 * Contributors: bobbingwide, vsgloik
 * Donate link: https://www.oik-plugins.com/oik/oik-donate/
-Tags:
+* Tags: performance, analysis
 * Requires at least: 5.6
 * Tested up to: 5.6
 * Stable tag: 0.0.0
@@ -11,6 +11,9 @@ Tags:
 
 ## Description 
 Determine the effect of activating / deactivating a plugin on server side performance.
+
+The slog-bloat plugin is intended to be the generic solution to enable performance comparison
+of server responses with different server configurations.
 
 Steps in performing a performance comparison.
 
@@ -22,20 +25,20 @@ The test site is not expected to have any traffic except the requests from vt-dr
 
 Step | Routine |Input | Output
 ---- | ------ | ------ | ------
-1. Save daily trace summary from the live site. | slog-bloat getvt | bwtrace.vt.ccyymmdd[.site] | original.csv
-2. Use slog to analyze requests | slog-bloat calls slog? | original.csv
-3. Extract sensible GET requests with reasonable responses | slog-bloat filter  | original.csv | filtered.csv
+.1. Save daily trace summary from the live site. | slog-bloat getvt | bwtrace.vt.ccyymmdd[.site] | original.csv
+.2. Use slog to analyze requests | slog-bloat calls slog? | original.csv
+.3. Extract sensible GET requests with reasonable responses | slog-bloat filter  | original.csv | filtered.csv
 
-4. Reset daily trace summary on test site | oik-bwtrace
-5. Run vt-driver.php for filtered.csv against the test site| vt-driver | filtered.csv |
-6. Download trace file for vanilla.csv | slog-bloat getvt | bwtrace.vt.ccyymmdd[.site] | vanilla.csv
-7. Compare filtered.csv vs vanilla.csv | slog-bloat compare | filtered.csv & vanilla.csv | control
+.4. Reset daily trace summary on test site | oik-bwtrace.
+.5. Run vt-driver.php for filtered.csv against the test site| vt-driver | filtered.csv |
+.6. Download trace file for vanilla.csv | slog-bloat getvt | bwtrace.vt.ccyymmdd[.site] | vanilla.csv
+.7. Compare filtered.csv vs vanilla.csv | slog-bloat compare | filtered.csv & vanilla.csv | control
 
-8. Make an adjustment on the test site - eg activate/deactivate a plugin
-9. Reset daily trace summary on test site | oik-bwtrace
-10. Run vt-driver.php for filtered.csv against the test site | vt-driver | filtered.csv
-11. Download trace file for adjust-1.csv   | slog-bloat getvt | bwtrace.vt.ccyymmdd[.site] | adjust-1.csv
-12. Compare vanilla.csv vs adjust-1.csv | slog-bloat compare | vanilla.csv & adjust-1.csv | result-1
+.8. Make an adjustment on the test site - eg activate/deactivate a plugin.
+.9. Reset daily trace summary on test site | oik-bwtrace
+.10. Run vt-driver.php for filtered.csv against the test site | vt-driver | filtered.csv
+.11. Download trace file for adjust-1.csv   | slog-bloat getvt | bwtrace.vt.ccyymmdd[.site] | adjust-1.csv
+.12. Compare vanilla.csv vs adjust-1.csv | slog-bloat compare | vanilla.csv & adjust-1.csv | result-1
 
 go to 8. to apply the next adjustment.
 
@@ -57,11 +60,10 @@ compare | run slog and merger to produce comparison charts
 
 
 # What is provided? 
-Other batch routines associated with performance analysis will be transferred to slog-bloat.
 
 slog-bloat contains the routines that measure and report the effect of activating / deactivating a plugin on server side performance, making use of
-slog - which is used to view charts for daily trace summary reports, making use of
-sb-chart-block to display the charts
+slog - which is used to view charts for daily trace summary reports, by making use of
+sb-chart-block to display the charts.
 
 plugin    | file         | purpose
 --------- | ------------ | ----------
@@ -120,22 +122,10 @@ downloads.php - Extracts information about plugins from wordpress.org
 # What else do I need? 
 
 * oik-bwtrace to produce the files in the first place
-* oik-batch ( an alternative to WP-cli ) to drive the routines
-* oik-lib, oik and other libraries used by slog-bloat
+* oik-batch ( an alternative to WP-cli ) to drive the vt-driver.php routine
+* slog
 * sb-chart-block
 
-# How has it been used? 
-
-Originally developed in Herb Miller's play area to help compare performance of different hosting solutions
-it was extended at the end of 2015 during the "12 days of Christmas" to analyse the effect of the top 12
-WordPress plugins on server execution time.
-
-slog-bloat contains the routines specifically used against local copies of the website in question.
-
-# What is the slog-bloat plugin? 
-
-The slog-bloat plugin is intended to be the generic solution to enable performance comparison
-of server responses with different server configurations.
 
 
 
