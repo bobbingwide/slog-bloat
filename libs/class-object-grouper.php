@@ -297,7 +297,7 @@ class Object_Grouper extends Object_base {
 			}
 			if ( $having ) {
 				$record = [];
-				$record[] = $key;
+				$record[] = $this->asCSV_field_key( $key );
 				$record[] = $this->asCSV_field_count( $key, $field );
 				$record[] = $this->asCSV_field_elapsed( $key, $field );
 				$record[] = $this->asCSV_field_average( $key, $field );
@@ -311,6 +311,15 @@ class Object_Grouper extends Object_base {
 		}
 		return $results;
 
+	}
+
+	/**
+	 * Limits the key to the first word?
+	 */
+	function asCSV_field_key( $key ) {
+		//list( $first_word) = explode( ' ', $key, 2 );
+		//return $first_word;
+		return $key;
 	}
 
 	/**
