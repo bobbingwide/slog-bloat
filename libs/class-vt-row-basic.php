@@ -98,6 +98,7 @@ class VT_row_basic {
   public $isodate; //20
 	public $useragent; // 21
 	public $method; // 22
+	public $http_response; // 23
 
   public $suri;   // Stripped URI
 	public $suritl; // Top level part of stripped URI
@@ -133,6 +134,7 @@ class VT_row_basic {
      20 | isodate | Date - ISO 8061 |  2015-12-28T23:57:58+00:00
 	 21 | useragent | HTTP useragent | Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)
 	 22 | method | Request method | GET
+	 23 | http_response | HTTP response code | 200
 
 		 Other examples
 		 `
@@ -143,12 +145,15 @@ class VT_row_basic {
   public function __construct( $transline ) {
 	  $this->narrator = Narrator::instance();
     $this_trans = str_getcsv( $transline );
-    $this->uri = $this_trans[0];
+    if ( count( $this_trans) > 24 ) {
+    	$this->narrator->narrate( "Too many columns", $transline );
+    }
+    $this->uri = $this->first_word( $this_trans[0] );
     $this->action = $this_trans[1];
     $this->final  = $this_trans[2];
-    //$this->phpver = $this_trans[3];
-    //$this->phpfns = $this_trans[4];
-    //$this->userfns= $this_trans[5];
+    $this->phpver = $this_trans[3];
+    $this->phpfns = $this_trans[4];
+    $this->userfns= $this_trans[5];
     $this->classes= $this_trans[6];
     $this->plugins= $this_trans[7];
     $this->files  = $this_trans[8];
@@ -166,9 +171,15 @@ class VT_row_basic {
 	$this->isodate= $this_trans[20];
 	$this->useragent = $this_trans[21];
 	$this->method = $this_trans[22];
+	$this->http_response = isset( $this_trans[23] ) ? $this_trans[23] : 'xxx';
 
 	$this->uri_parser();
 	$this->set_request_type();
+  }
+
+  function first_word( $key ) {
+    list( $first_word) = explode( ' ', $key, 2 );
+	return $first_word;
   }
 
 	/**
