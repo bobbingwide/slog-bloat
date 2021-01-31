@@ -23,35 +23,82 @@ class Slog_Bloat_Admin {
 	 */
 	private $slog_files;
 
-	private $slog_working_dir;
+	private $slog_downloads_dir;
+	private $slog_remote_url;
 
 	function __construct() {
-
-		$this->slog_working_dir = plugin_dir_path( __DIR__ ) . 'working/2021/';
-		//BW_::p( "Working dir: " . $this->slog_working_dir );
-
+		$this->get_options();
 	}
 
-	function get_working_filename( $file ) {
-		$filename = $this->slog_working_dir . $file;
+	function get_options() {
+		$options = get_option('slog_bloat_options');
+		$this->slog_downloads_dir = null;
+		$this->slog_remote_url = null;
+		if ( false !== $options ) {
+			//print_r( $options );
+			$this->slog_downloads_dir=$options['_slog_downloads_dir'];
+			$this->slog_remote_url   =$options['_slog_remote_url'];
+		}
+	}
+
+	function get_downloads_filename( $file ) {
+		$filename = $this->slog_downloads_dir . $file;
 		return $filename;
 	}
 
 
 	function process() {
 
+		add_filter( "bw_nav_tabs_slog-bloat", [ $this, "nav_tabs" ], 10, 2);
+		add_action( 'slog_bloat_nav_tab_compare', [ $this, "nav_tab_compare"] );
+		add_action( 'slog_bloat_nav_tab_download', [ $this, "nav_tab_download"] );
+		add_action( 'slog_bloat_nav_tab_filter', [ $this, "nav_tab_filter"] );
+		add_action( 'slog_bloat_nav_tab_settings', [ $this, "nav_tab_settings"] );
+
+		// @TODO Convert to shared library?
+		oik_require( "includes/bw-nav-tab.php" );
 		BW_::oik_menu_header( __( "Slog bloat", "slog-bloat" ), 'w100pc' );
-		BW_::oik_box(null, null, __('Results', 'slog-bloat'), [$this, 'process_request'] );
-		BW_::oik_box( null, null, __( "Form", "slog-bloat" ), [ $this, "admin_form" ] );
-		//BW_::oik_box( null, null, __( "Chart", "slog" ), "slog_bloat_admin_chart" );
-		//BW_::oik_box( null, null, __( "CSV table", "slog" ), "slog_bloat_admin_table" );
+		$tab = bw_nav_tabs( "compare", "Compare" );
+		do_action( "slog_bloat_nav_tab_$tab" );
 		oik_menu_footer();
 		bw_flush();
 
 	}
 
+	function nav_tab_compare() {
+		BW_::oik_box(null, null, __('Results', 'slog-bloat'), [$this, 'process_request'] );
+		BW_::oik_box( null, null, __( "Compare results", "slog-bloat" ), [ $this, "compare_form" ] );
+	}
+
+	function nav_tab_download() {
+		BW_::oik_box(null, null, __('Results', 'slog-bloat'), [$this, 'process_request'] );
+		BW_::oik_box( null, null, __( "Form", "slog-bloat" ), [ $this, "download_form" ] );
+	}
+
+	function nav_tab_filter() {
+		BW_::oik_box(null, null, __('Results', 'slog-bloat'), [$this, 'process_request'] );
+		BW_::oik_box( null, null, __( "Form", "slog-bloat" ), [ $this, "filter_form" ] );
+	}
+
+	function nav_tab_settings() {
+		BW_::oik_box( null, null, __( "Settings form", "slog-bloat" ), [ $this, "settings_form" ] );
+	}
+
+	/**
+	 * Implements bw_nav_tabs_slog_bloat filter.
+	 *
+	 * @TODO - the filter functions should check global $pagenow before adding any tabs - to support multiple pages using this logic
+	 */
+	function nav_tabs(  $nav_tabs, $tab ) {
+		$nav_tabs['compare'] = 'Compare';
+		$nav_tabs['download'] = 'Download';
+		$nav_tabs['filter'] = 'Filter';
+		$nav_tabs['settings'] = 'Settings';
+		return $nav_tabs;
+	}
+
 	function process_request() {
-		$this->validate_working_dir();
+		$this->validate_downloads_dir();
 		$this->validate_slog_summary_file();
 		$this->validate_slog_download_file();
 		$this->validate_slog_filtered_file();
@@ -60,19 +107,24 @@ class Slog_Bloat_Admin {
 
 	}
 
-	function validate_working_dir() {
-		$working_dir = bw_array_get( $_REQUEST, "_slog_working_dir",plugin_dir_path( __DIR__ ) . 'working/2021/' );
-		$working_dir = str_replace( "\\", "/", $working_dir );
-		$this->slog_working_dir = $working_dir;
+	function validate_downloads_dir() {
+		$downloads_dir = bw_array_get( $_REQUEST, "_slog_downloads_dir", $this->slog_downloads_dir );
+		$downloads_dir = str_replace( "\\", "/", $downloads_dir );
+		$downloads_dir = trailingslashit( $downloads_dir );
+		$this->slog_downloads_dir = $downloads_dir;
+	}
+
+	function ccyymmdd_date() {
+		return bw_format_date( null, 'Ymd');
 	}
 
 	function validate_slog_summary_file() {
-		$slog_summary_file      =bw_array_get( $_REQUEST, "_slog_summary_file", "https://oik-plugins.co.uk_co/bwtrace/bwtrace.vt.20210124" );
+		$slog_summary_file      =bw_array_get( $_REQUEST, "_slog_summary_file", 'bwtrace.vt.' . $this->ccyymmdd_date() );
 		$this->slog_summary_file=$slog_summary_file;
 	}
 
 	function validate_slog_download_file() {
-		$slog_download_file=bw_array_get( $_REQUEST, '_slog_download_file', 'original.csv' );
+		$slog_download_file=bw_array_get( $_REQUEST, '_slog_download_file', 'bwtrace.vt.' . $this->ccyymmdd_date() );
 		// @TODO perform some sort of validate_file() logic.
 		$this->slog_download_file=$slog_download_file;
 	}
@@ -93,7 +145,7 @@ class Slog_Bloat_Admin {
 		for ( $i = 0; $i < 12; $i++ ) {
 			$file = bw_array_get( $_REQUEST, "_slog_file_$i", null );
 			//echo $file;
-			$filename = $this->get_working_filename( $file );
+			$filename = $this->get_downloads_filename( $file );
 			//echo $filename;
 			if ( $file && file_exists( $filename ) ) {
 				$this->slog_files[] = $file;
@@ -105,7 +157,7 @@ class Slog_Bloat_Admin {
 
 	function get_file_list() {
 		$file_options = [];
-		$files = glob( $this->slog_working_dir . '*' );
+		$files = glob( $this->slog_downloads_dir . '*' );
 		foreach ( $files as $file ) {
 			$basename = basename( $file );
 			$file_options[$basename] = $basename;
@@ -114,34 +166,10 @@ class Slog_Bloat_Admin {
 		return $file_options;
 	}
 
-	function admin_form() {
-
+	function compare_form() {
 		bw_form();
 		stag( 'table', 'form-table' );
-		bw_flush();
-		//settings_fields('slog_options_options');
-
-		//$report_options = slog_admin_report_options();
-		//$type_options = slog_admin_type_options();
-		//$display_options = slog_admin_display_options();
-		//  $name, $len, $text, $value, $class=null, $extras=null, $args=null
-
-		BW_::bw_textfield( '_slog_working_dir', 60, __( 'Working directory', 'slog-bloat'), $this->slog_working_dir );
-		BW_::bw_textfield( '_slog_summary_file', 60, __( 'File URL', 'slog-bloat' ), $this->slog_summary_file );
-		BW_::bw_textfield( '_slog_download_file', 60, __( 'Downloaded file', 'slog-bloat' ), $this->slog_download_file );
-		BW_::bw_textfield( '_slog_filtered_file', 60, __( 'Filtered file', 'slog-bloat' ), $this->slog_filtered_file );
-
-
-
-		// 	BW_::bw_select_arr( 'slog_options', __( 'Report type', 'slog' ), $options, 'report', array( "#options" => $report_options ) );
-		//BW_::bw_select_arr( 'slog_options', __( 'Chart type', 'slog' ), $options, 'type', array( "#options" => $type_options ) );
-		//BW_::bw_select_arr( 'slog_options', __( "Display", 'slog' ), $options, 'display', array( "#options" => $display_options ) );
-		//BW_::bw_textfield_arr( 'slog_options', __( 'Having', 'slog'), $options, 'having', 10 );
-
-
-		//BW_::p( isubmit( "_slog_action[_slog_download]", __( "Download daily trace summary", 'slog-bloat' ), null, "button-primary" ) );
-		//BW_::p( isubmit( "_slog_action[_slog_filter]", __( 'Filter downloaded file', 'slog-bloat' ), null ) );
-
+		//bw_flush();
 		$fileoptions = $this->get_file_list();
 		for ( $i = 0; $i< 12; $i++ ) {
 			$label = sprintf( __( 'Compare %1s', 'slog-bloat'), $i+1 );
@@ -149,15 +177,59 @@ class Slog_Bloat_Admin {
 			BW_::bw_select( "_slog_file_$i", $label,  $this->slog_files[$i], [ '#options' => $fileoptions, '#optional' => true ] );
 			//BW_::bw_textfield( '_slog_file_1', 60, __( 'Compare 2' ), $this->slog_file[1] );
 		}
-
 		etag( "table" );
-		e( isubmit( "_slog_action[_slog_download]", __( "Download daily trace summary", 'slog-bloat' ), null, "button-primary" ) );
-		e( isubmit( "_slog_action[_slog_filter]", __( 'Filter downloaded file', 'slog-bloat' ), null ) );
 		e( isubmit( "_slog_action[_slog_compare]", __( 'Compare results', 'slog-bloat')));
 		etag( "form" );
 		bw_flush();
 
+	}
 
+	function download_form() {
+		bw_form();
+		stag( 'table', 'form-table' );
+		BW_::bw_textfield( '_slog_remote_url', 60, __( 'Remote URL trace files directory', 'slog-bloat'), $this->slog_remote_url );
+		BW_::bw_textfield( '_slog_summary_file', 60, __( 'Trace summary file', 'slog-bloat' ), $this->slog_summary_file );
+		BW_::bw_textfield( '_slog_downloads_dir', 60, __( 'Local downloads directory', 'slog-bloat'), $this->slog_downloads_dir );
+		BW_::bw_textfield( '_slog_download_file', 60, __( 'Downloaded file name', 'slog-bloat' ), $this->slog_download_file );
+		etag( "table" );
+		e( isubmit( "_slog_action[_slog_download]", __( "Download daily trace summary", 'slog-bloat' ), null, "button-primary" ) );
+		etag( "form" );
+		bw_flush();
+	}
+
+	function filter_form() {
+		bw_form();
+		stag( 'table', 'form-table' );
+		// This should be a select list
+		//BW_::bw_textfield( '_slog_download_file', 60, __( 'Downloaded file', 'slog-bloat' ), $this->slog_download_file );
+		$fileoptions = $this->get_file_list();
+		arsort( $fileoptions );
+		BW_::bw_select( "_slog_download_file", __('Downloaded file', 'slog-bloat') , $this->slog_download_file, [ '#options' => $fileoptions, '#optional' => true ] );
+		BW_::bw_textfield( '_slog_filtered_file', 60, __( 'Filtered file', 'slog-bloat' ), $this->slog_filtered_file );
+		etag( "table" );
+		e( isubmit( "_slog_action[_slog_filter]", __( 'Filter downloaded file', 'slog-bloat' ), null ) );
+		etag( "form" );
+		bw_flush();
+	}
+
+
+	/**
+	 * Maintains the slog-bloat settings.
+	 *
+	 */
+	function settings_form() {
+		bw_form('options.php');
+		$options = get_option('slog_bloat_options');
+		stag( 'table', 'form-table' );
+		bw_flush();
+		settings_fields('slog_bloat_options_options');
+		BW_::bw_textfield_arr( 'slog_bloat_options', __( 'Remote URL trace files directory', 'slog' ), $options, '_slog_remote_url', 60 );
+		BW_::bw_textfield_arr( 'slog_bloat_options', __( 'Download files directory', 'slog' ), $options, '_slog_downloads_dir', 60 );
+		//BW_::bw_textfield_arr( 'slog_bloat_options', __( 'Filtered files directory', 'slog' ), $options, '_slog_filtered_dir', 60 );
+		etag( "table" );
+		BW_::p( isubmit( "ok", __( "Save settings", 'slog' ), null, "button-primary" ) );
+		etag( "form" );
+		bw_flush();
 	}
 
 	function perform_action() {
@@ -199,12 +271,13 @@ class Slog_Bloat_Admin {
 	 * This assumes that the file is available for download.
 	 */
 	function get_vt() {
-		$this->file_contents=file_get_contents( $this->slog_summary_file );
+		$target_url = $this->slog_remote_url . '/' . $this->slog_summary_file;
+		$this->file_contents=file_get_contents( $target_url );
 		BW_::p( "File size:" . strlen( $this->file_contents ) );
 	}
 
 	function save_vt() {
-		$written=file_put_contents( $this->get_working_filename( $this->slog_download_file ), $this->file_contents );
+		$written=file_put_contents( $this->get_downloads_filename( $this->slog_download_file ), $this->file_contents );
 		BW_::p( "Download:" . $this->slog_download_file );
 		BW_::p( "Written:" . $written );
 	}
@@ -217,10 +290,10 @@ class Slog_Bloat_Admin {
 
 		//$this->slog_bloat_admin_steps();
 		$vt_stats = new VT_stats();
-		$vt_stats->set_file( $this->get_working_filename( $this->slog_download_file ) );
+		$vt_stats->set_file( $this->get_downloads_filename( $this->slog_download_file ) );
 		$vt_stats->load_file();
 		$vt_stats->filter();
-		$vt_stats->write_filtered( $this->get_working_filename( $this->slog_filtered_file ) );
+		$vt_stats->write_filtered( $this->get_downloads_filename( $this->slog_filtered_file ) );
 
 	}
 
@@ -312,9 +385,7 @@ class Slog_Bloat_Admin {
 
 	function get_reporter_options( $file ) {
 
-		//$options=get_option( 'slog_options' );
-		//print_r( $options );
-		$options['file'] = $this->get_working_filename( $file );
+		$options['file'] = $this->get_downloads_filename( $file );
 		$options['report'] = 'elapsed';
 		$options['type'] = 'line';
 		$options['display'] = 'percentage_count_accumulative';

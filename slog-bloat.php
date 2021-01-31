@@ -4,7 +4,7 @@ Plugin Name: slog-bloat
 Depends: oik-bwtrace, slog
 Plugin URI: https://bobbingwide.com/blog/oik-plugins/slog-bloat/
 Description: Determine the effect of activating / deactivating a plugin on server side performance.
-Version: 0.0.0
+Version: 0.0.1
 Author: bobbingwide
 Author URI: https://www.bobbingwide.com/about-bobbing-wide
 Text Domain: slog-bloat
@@ -64,6 +64,7 @@ function slog_bloat_slog_loaded() {
 	//print_r( $libs );
 	slog_enable_autoload();
 	add_action( 'admin_menu', 'slog_bloat_admin_menu', 11 );
+	add_action( 'admin_init', 'slog_bloat_options_init' );
 }
 
 /**
@@ -217,12 +218,25 @@ function slog_bloat_admin_page() {
 		$slog_bloat_admin_page=new Slog_Bloat_Admin();
 		$slog_bloat_admin_page->process();
 	} else {
-		BW_::p( 'Slog not activated?');
+		BW_::p( __( 'Please install and activate the Slog plugin', 'slog-bloat' ) );
 		bw_flush();
 		bw_trace2();
 	}
 
 
+}
+
+/**
+ * Register slog_options
+ *
+ */
+function slog_bloat_options_init(){
+	$args = [ 'sanitize_callback' => 'slog_bloat_options_validate' ] ;
+	register_setting( 'slog_bloat_options_options', 'slog_bloat_options', $args );
+}
+
+function slog_bloat_options_validate( $input ) {
+	return $input;
 }
 
 
