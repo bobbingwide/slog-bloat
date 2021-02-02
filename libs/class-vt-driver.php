@@ -46,11 +46,29 @@ class VT_driver {
 	 * Load the URLs to process
 	 */
 	public function prepare( $file, $url, $loops ) {
-		$this->file = file( $file );
-		$this->total = count( $this->file );
+		$this->load_file( $file );
+
 		$this->loops = $loops;
 		$this->lines = $this->total;
 		$this->url = $url;
+	}
+
+	public function load_file( $file ) {
+		$this->file = [];
+		$filename = $file;
+		if ( file_exists( $filename ) ) {
+			echo "Loading file: " . $filename;
+			$this->file = file( $filename );
+			//print_r( $this->file );
+		} else {
+			echo "Missing file: " . $filename;
+			gob();
+		}
+		$this->total = count( $this->file );
+		if ( 0 === $this->total ) {
+			echo "Nothing to do!";
+			gob();
+		}
 	}
 
 
