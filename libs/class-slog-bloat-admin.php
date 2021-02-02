@@ -25,6 +25,7 @@ class Slog_Bloat_Admin {
 
 	private $slog_downloads_dir;
 	private $slog_remote_url;
+	private $slog_request_filters;
 
 	function __construct() {
 		$this->get_options();
@@ -38,7 +39,42 @@ class Slog_Bloat_Admin {
 			//print_r( $options );
 			$this->slog_downloads_dir=$options['_slog_downloads_dir'];
 			$this->slog_remote_url   =$options['_slog_remote_url'];
+			$this->slog_request_filters = isset( $options['_slog_request_filters'] ) ? $options['_slog_request_filters'] : $this->get_request_types();
 		}
+	}
+
+	/**
+	 * Returns the possible request types.
+	 *
+	 * Doesn't need to be the full set. Just the ones that we're likely to filter on.
+	 *
+	 * - method: GET, POST, HEAD. But not DELETE?
+	 * - BOT, CLI - when applicable
+	 * - FE, ADMIN, AJAX, REST, CLI or spam
+	 */
+	function get_request_types() {
+		$request_types = [];
+		$request_types['GET-FE'] = 'GET-FE';
+		$request_types['GET-BOT-FE'] = 'GET-BOT-FE';
+		$request_types['GET-CLI-FE'] = 'GET-CLI-FE';
+		$request_types['GET-ADMIN'] = 'GET-ADMIN';
+		$request_types['GET-BOT-ADMIN'] = 'GET-BOT-ADMIN';
+		$request_types['GET-AJAX'] = 'GET-AJAX';
+		$request_types['GET-BOT-AJAX'] = 'GET-BOT-AJAX';
+		$request_types['GET-REST'] = 'GET-REST';
+		$request_types['GET-CLI'] = 'GET-CLI';
+		$request_types['GET-spam'] = 'GET-spam';
+		$request_types['HEAD-FE'] = 'HEAD-FE';
+		$request_types['POST-FE'] = 'POST-FE';
+		$request_types['POST-BOT-FE'] = 'POST-BOT-FE';
+		$request_types['POST-CLI-FE'] = 'POST-CLI-FE';
+		$request_types['POST-ADMIN'] = 'POST-ADMIN';
+		$request_types['POST-ADMIN'] = 'POST-ADMIN';
+		$request_types['POST-AJAX'] = 'POST-AJAX';
+		$request_types['POST-REST'] = 'POST-REST';
+		$request_types['POST-CLI'] = 'POST-CLI';
+		$request_types['POST-spam'] = 'POST-spam';
+		return $request_types;
 	}
 
 	function get_downloads_filename( $file ) {
@@ -48,13 +84,11 @@ class Slog_Bloat_Admin {
 
 
 	function process() {
-
 		add_filter( "bw_nav_tabs_slog-bloat", [ $this, "nav_tabs" ], 10, 2);
 		add_action( 'slog_bloat_nav_tab_compare', [ $this, "nav_tab_compare"] );
 		add_action( 'slog_bloat_nav_tab_download', [ $this, "nav_tab_download"] );
 		add_action( 'slog_bloat_nav_tab_filter', [ $this, "nav_tab_filter"] );
 		add_action( 'slog_bloat_nav_tab_settings', [ $this, "nav_tab_settings"] );
-
 		// @TODO Convert to shared library?
 		oik_require( "includes/bw-nav-tab.php" );
 		BW_::oik_menu_header( __( "Slog bloat", "slog-bloat" ), 'w100pc' );
@@ -206,6 +240,7 @@ class Slog_Bloat_Admin {
 		arsort( $fileoptions );
 		BW_::bw_select( "_slog_download_file", __('Downloaded file', 'slog-bloat') , $this->slog_download_file, [ '#options' => $fileoptions, '#optional' => true ] );
 		BW_::bw_textfield( '_slog_filtered_file', 60, __( 'Filtered file', 'slog-bloat' ), $this->slog_filtered_file );
+		bw_tablerow( ["Request types" , implode( ',', $this->slog_request_filters)]) ;
 		etag( "table" );
 		e( isubmit( "_slog_action[_slog_filter]", __( 'Filter downloaded file', 'slog-bloat' ), null ) );
 		etag( "form" );
@@ -226,6 +261,11 @@ class Slog_Bloat_Admin {
 		BW_::bw_textfield_arr( 'slog_bloat_options', __( 'Remote URL trace files directory', 'slog' ), $options, '_slog_remote_url', 60 );
 		BW_::bw_textfield_arr( 'slog_bloat_options', __( 'Download files directory', 'slog' ), $options, '_slog_downloads_dir', 60 );
 		//BW_::bw_textfield_arr( 'slog_bloat_options', __( 'Filtered files directory', 'slog' ), $options, '_slog_filtered_dir', 60 );
+		$request_types = $this->get_request_types();
+		$args = [ '#options' => $request_types, '#multiple' => count( $request_types ) ];
+		//print_r( $this->slog_request_filters );
+		//print_r( $args );
+		BW_::bw_select_arr( 'slog_bloat_options', __('Request types', 'slog-bloat'), $options,'_slog_request_filters', $args );
 		etag( "table" );
 		BW_::p( isubmit( "ok", __( "Save settings", 'slog' ), null, "button-primary" ) );
 		etag( "form" );
@@ -291,6 +331,12 @@ class Slog_Bloat_Admin {
 		//$this->slog_bloat_admin_steps();
 		$vt_stats = new VT_stats();
 		$vt_stats->set_file( $this->get_downloads_filename( $this->slog_download_file ) );
+		// Originally hardcoded.
+		//$this->request_type_filters = [ 'GET-FE' => true, 'GET-BOT-FE' => false ];
+		//$this->slog_request_filters
+		$vt_stats->set_request_type_filters( $this->slog_request_filters );
+		/** Hardcoded for now. xxx represents unknown */
+		$vt_stats->set_http_response_filters( ['200', 'xxx']);
 		$vt_stats->load_file();
 		$vt_stats->filter();
 		$vt_stats->write_filtered( $this->get_downloads_filename( $this->slog_filtered_file ) );
