@@ -90,9 +90,9 @@ class Slog_Bloat_Admin {
 		add_action( 'slog_bloat_nav_tab_filter', [ $this, "nav_tab_filter"] );
 		add_action( 'slog_bloat_nav_tab_settings', [ $this, "nav_tab_settings"] );
 		// @TODO Convert to shared library?
-		oik_require( "includes/bw-nav-tab.php" );
+		//oik_require( "includes/bw-nav-tab.php" );
 		BW_::oik_menu_header( __( "Slog bloat", "slog-bloat" ), 'w100pc' );
-		$tab = bw_nav_tabs( "compare", "Compare" );
+		$tab = BW_nav_tab::bw_nav_tabs( "compare", "Compare" );
 		do_action( "slog_bloat_nav_tab_$tab" );
 		oik_menu_footer();
 		bw_flush();
