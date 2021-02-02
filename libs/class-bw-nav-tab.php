@@ -55,7 +55,7 @@ class BW_nav_tab {
 	 *
 	 * @return string $tab - the currently selected tab
 	 */
-	function bw_nav_tabs( $default_tab=null, $default_label=null ) {
+	static function bw_nav_tabs( $default_tab=null, $default_label=null ) {
 		$tab=bw_array_get( $_REQUEST, "tab", $default_tab );
 		//bw_trace2( $tab, "tab" );
 		$_REQUEST['tab']=$tab;
