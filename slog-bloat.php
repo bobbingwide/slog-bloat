@@ -199,9 +199,16 @@ function slog_bloat_admin_menu() {
 		} else {
 			//bw_trace2( "Slog admin not possible");
 		}
+		add_action( "admin_print_styles-settings_page_slog-bloat", "slog_bloat_enqueue_styles" );
 	} else {
 		echo "Oops";
 	}
+}
+
+function slog_bloat_enqueue_styles() {
+	
+	wp_register_style( 'slog-bloat', oik_url( 'slog-bloat.css', 'slog-bloat' ), false );
+	wp_enqueue_style( 'slog-bloat' );
 }
 
 /**
@@ -216,6 +223,7 @@ function slog_bloat_admin_page() {
 	// If slog implements autoload will it find Slog-Bloat's classes?
 	if ( class_exists( 'Slog_Bloat_Admin')) {
 		$slog_bloat_admin_page=new Slog_Bloat_Admin();
+
 		$slog_bloat_admin_page->process();
 	} else {
 		BW_::p( __( 'Please install and activate the Slog plugin', 'slog-bloat' ) );

@@ -1,0 +1,16 @@
+/* slog-bloat.css
+ * CSS for the slog-bloat plugin.
+ *
+ * Applies to the slog-bloat
+  Could also be applied to slog admin pages
+ *
+ */
+#compare_form .form-table td,
+#download_form .form-table td,
+#filter_form .form-table td,
+#settings_form .form-table td,
+#slog_admin_form .form-table td {
+	padding: 0px;
+}
+
+.w100pc { width: 100% }
