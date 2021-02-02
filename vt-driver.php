@@ -5,7 +5,7 @@
  * @copyright (C) Copyright Bobbing Wide 2015-2021
  * Syntax: oikwp vt-driver.php bwtrace.vt.1224 url loops
  *
- * Input: file e.g. gt100s.csv
+ * Input: file eg gt100s.csv
  * Output: bwtrace.ct.mmdd - client trace report
  *
  * Purpose: To run a set of sample requests to a website in order
@@ -33,10 +33,8 @@ oik_require( 'libs/class-vt-driver.php', 'slog-bloat');
 
 $driver = new VT_driver();
 $loops = oik_batch_query_value_from_argv( 1, 1000 );
-$url = oik_batch_query_value_from_argv( 2, 'https://ebps.co.uk');
-$file = oik_batch_query_value_from_argv( 3, 'working/2021/filtered.csv' );
-
-
+$url = oik_batch_query_value_from_argv( 2, 'https://oik-plugins.co.uk');
+$file = oik_batch_query_value_from_argv( 3, 'filtered0201.csv' );
 
 $driver->prepare( $file, $url, $loops );
 $driver->loop();
