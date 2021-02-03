@@ -1,8 +1,10 @@
 <?php
 
-// (C) Copyright Bobbing Wide 2015-2021
-
-
+/**
+ * @package slog-bloat
+ * @copyright (C) Copyright Bobbing Wide 2015-2021
+ * Class VT_driver
+ */
 
 class VT_driver {
 
@@ -15,7 +17,6 @@ class VT_driver {
 	/**
 	 * @var loops - really should be called requests.
 	 */
-
 	public $loops;
 
 	public $total;
@@ -30,35 +31,33 @@ class VT_driver {
 
 	/**
 	 * Constructor for VT_driver
-	 *
-	 *
 	 */
 	public function __construct() {
-		//$this->file = file( "gtsc.csv" );
-		//$this->file = file( "gt100.csv" );
-		//$this->file = file( "gt100s.csv" );
-
-		//$this->file = file( "gt100-2016.csv" );
-
-
 	}
+
 	/**
-	 * Load the URLs to process
+	 * Loads the URLs to process and the number of requests to perform.
+	 *
 	 */
 	public function prepare( $file, $url, $loops ) {
 		$this->load_file( $file );
-
 		$this->loops = $loops;
 		$this->lines = $this->total;
 		$this->url = $url;
 	}
 
+	/**
+	 * Loads the driver file.
+	 *
+	 * @param $file
+	 */
 	public function load_file( $file ) {
 		$this->file = [];
 		$filename = $file;
 		if ( file_exists( $filename ) ) {
 			echo "Loading file: " . $filename;
-			$this->file = file( $filename );
+			//$this->file = file( $filename );
+			$this->load_filtered_file( $filename );
 			//print_r( $this->file );
 		} else {
 			echo "Missing file: " . $filename;
@@ -67,8 +66,29 @@ class VT_driver {
 		$this->total = count( $this->file );
 		if ( 0 === $this->total ) {
 			echo "Nothing to do!";
+			// Perhaps we can make it up as we go along
+			// e.g. Just visit the home URL loops times.
 			gob();
 		}
+	}
+
+	/**
+	 * Loads the given file and filters it.
+	 *
+	 * @param $filename
+	 */
+	function load_filtered_file( $filename) {
+		$vt_stats = new VT_stats();
+		$vt_stats->set_file( $filename );
+		// @TODO Make flexible using slog_bloat_options? - hardcoded for now.
+		$vt_stats->set_request_type_filters( ['GET-FE'] );
+		/** Hardcoded for now. xxx represents unknown */
+		$vt_stats->set_http_response_filters( ['200', 'xxx']);
+		$vt_stats->load_file();
+		$vt_stats->filter();
+		$this->file = $vt_stats->get_filtered();
+		//$vt_stats->write_filtered( $this->get_downloads_filename( $this->slog_filtered_file ) );
+
 	}
 
 
@@ -80,7 +100,7 @@ class VT_driver {
 				$line = $this->file[ $lines ];
 				$vt = str_getcsv( $line );
 				if ( 0 !== strpos( $vt[0], "/wp-admin" ) ) {
-					echo $loop . '/' .  $this->loops . " " . $vt[0] . PHP_EOL;
+					echo $loop . ' / ' .  $this->loops . " " . $vt[0] . PHP_EOL;
 					$this->process_request( $vt[0], $line );
 				}
 			}
@@ -91,7 +111,7 @@ class VT_driver {
 	public function build_url( $uri ) {
 		$url = $this->url;
 		$url .= $uri;
-		echo $url;
+		echo $url . PHP_EOL;
 		return $url;
 
 	}
@@ -100,11 +120,23 @@ class VT_driver {
 		$this->timestart = microtime( true );
 		$url = $this->build_url( $uri );
 		$result = $this->remote_get( $url );
-		echo strlen(  $result );
+
 		$timeend = microtime( true );
+		if ( $result ) {
+			$len = strlen(  $result );
+		} else {
+			echo "No result for: " . $url . PHP_EOL;
+			$len = 0;
+		}
+		//print_r( $result );
+		$response_code = $this->retrieve_response_code();
+		//print_r( $response_code );
+		// We can get this when the contents is Private.
+		// Does this actually return a 404?
+
 		$this->timetotal = $timeend - $this->timestart;
 		$report_vt=$this->report_vt( $uri, $result );
-		echo $uri . " " . $this->timetotal . " " . $this->cache_time .  PHP_EOL;
+		echo $this->response_code . ' ' . $len . ' ' . $uri . " " . $this->timetotal . " " . $this->cache_time .  PHP_EOL;
 	}
 
 
@@ -196,6 +228,12 @@ class VT_driver {
 		}
 		bw_trace2( $this->result, "result", false, BW_TRACE_VERBOSE);
 		return( $this->result );
+	}
+
+	function retrieve_response_code() {
+		$this->response_code = wp_remote_retrieve_response_code( $this->request );
+		//echo $response_code;
+		return $this->response_code;
 	}
 
 	/**

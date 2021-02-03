@@ -3,10 +3,15 @@
 /**
  * @package slog-bloat
  * @copyright (C) Copyright Bobbing Wide 2015-2021
- * Syntax: oikwp vt-driver.php bwtrace.vt.1224 url loops
+ *
+ * Syntax: oikwp vt-driver.php loops url file
+ * where
+ * - loops - number of requests to run
+ * - url - base url of the site with scheme and www. prefix if necessary eg https://www.oik-plugins.co.uk
+ * - file - fully qualified driver file in oik-bwtrace daily trace summary file format
  *
  * Input: file eg gt100s.csv
- * Output: bwtrace.ct.mmdd - client trace report
+ * Output: bwtrace.ct.ccyymmdd - client trace report... written to where?
  *
  * Purpose: To run a set of sample requests to a website in order
  * to get it to use oik-bwtrace to produce a summary of the transactions run on the server.
@@ -16,11 +21,11 @@
  * but it's more likely that they should be directed to
  * another site specifically configured with a defined set of plugins.
  *
- * e.g. To measure the performance of the 12 plugins of Christmas we start with Akismet
+ * eg To measure the performance of the 12 plugins of Christmas we start with Akismet
  * and either add the others one by one, or replace them with the others, or both.
  *
- *
  * The transactions should be representative of real transactions
+ * requested by real users, not bots or spammers,
  * and performed against a real website configuration.
  *
  * To do this on a copy of oik-plugins.com means that we'll have the background overhead of the oik plugins.
@@ -30,47 +35,18 @@
  */
 oik_require( "includes/oik-remote.inc" );
 oik_require( 'libs/class-vt-driver.php', 'slog-bloat');
+oik_require( 'libs/class-vt-stats.php', 'slog' );
 
 $driver = new VT_driver();
 $loops = oik_batch_query_value_from_argv( 1, 1000 );
+
+/**
+ * Is it possible t use the URL when no file is specifed?
+ */
 $url = oik_batch_query_value_from_argv( 2, 'https://oik-plugins.co.uk');
 $file = oik_batch_query_value_from_argv( 3, 'filtered0201.csv' );
 
+
+
 $driver->prepare( $file, $url, $loops );
 $driver->loop();
-
-/**
-
-function vt_driver() {
-	$file = file( "oik-plugins.com/1221.vt" );
-	$file = file( "gt100.csv" );
-	$total = count( $file );
-	$count = 0;
-	for ( $loop = 1; $loop<=2; $loop++ ) {
-	foreach ( $file as $line ) {
-		$vt = str_getcsv( $line );
-		if ( 0 !== strpos( $vt[0], "/wp-admin" ) ) {
-			$timestart = microtime( true );
-			echo $loop .  "." . $count++ . '/' .  $total . " " . $vt[0] . PHP_EOL;
-			$url = build_url( $vt[0] );
-			$result = bw_remote_get2( $url );
-			//echo $result;
-			$timeend = microtime( true );
-			$timetotal = $timeend - $timestart;
-			echo $vt[0] . " " . $timetotal . PHP_EOL;
-
-		}
-	}
-	}
-
-}
-*/
-
-function build_url( $uri ) {
-	$url = "http://qw/oikcouk";
-	$url = "http://qw/oikcom";
-	$url = 'https://s.b/ebps';
-	$url .= $uri;
-	return( $url );
-}
-
