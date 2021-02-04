@@ -26,6 +26,7 @@ class Slog_Bloat_Admin {
 	private $slog_downloads_dir;
 	private $slog_remote_url;
 	private $slog_request_filters;
+	private $slog_filter_rows;
 
 	function __construct() {
 		$this->get_options();
@@ -35,11 +36,13 @@ class Slog_Bloat_Admin {
 		$options = get_option('slog_bloat_options');
 		$this->slog_downloads_dir = null;
 		$this->slog_remote_url = null;
+		$this->slog_filter_rows = false;
 		if ( false !== $options ) {
 			//print_r( $options );
 			$this->slog_downloads_dir=$options['_slog_downloads_dir'];
 			$this->slog_remote_url   =$options['_slog_remote_url'];
 			$this->slog_request_filters = isset( $options['_slog_request_filters'] ) ? $options['_slog_request_filters'] : $this->get_request_types();
+			$this->slog_filter_rows = isset( $options['_slog_filter_rows']) ? $options['_slog_filter_rows'] : false;
 		}
 	}
 
@@ -260,6 +263,7 @@ class Slog_Bloat_Admin {
 		settings_fields('slog_bloat_options_options');
 		BW_::bw_textfield_arr( 'slog_bloat_options', __( 'Remote URL trace files directory', 'slog' ), $options, '_slog_remote_url', 60 );
 		BW_::bw_textfield_arr( 'slog_bloat_options', __( 'Download files directory', 'slog' ), $options, '_slog_downloads_dir', 60 );
+		bw_checkbox_arr( 'slog_bloat_options', __('Automatically filter rows', 'slog-bloat'), $options, '_slog_filter_rows' );
 		//BW_::bw_textfield_arr( 'slog_bloat_options', __( 'Filtered files directory', 'slog' ), $options, '_slog_filtered_dir', 60 );
 		$request_types = $this->get_request_types();
 		$args = [ '#options' => $request_types, '#multiple' => count( $request_types ) ];
@@ -356,6 +360,8 @@ class Slog_Bloat_Admin {
 		//print_r( $this->slog_files );
 		$contents = [];
 		$slogger=slog_admin_slog_reporter();
+		$slogger->set_request_type_filters( $this->slog_request_filters);
+		$slogger->set_http_response_filters( ['200', 'xxx' ] );
 		foreach ( $this->slog_files as $file ) {
 			if ( $file ) {
 				$options=$this->get_reporter_options( $file );
@@ -430,12 +436,12 @@ class Slog_Bloat_Admin {
 	}
 
 	function get_reporter_options( $file ) {
-
 		$options['file'] = $this->get_downloads_filename( $file );
 		$options['report'] = 'elapsed';
 		$options['type'] = 'line';
 		$options['display'] = 'percentage_count_accumulative';
 		$options['having'] = '';
+		$options['filter'] = $this->slog_filter_rows;
 		return $options;
 	}
 
