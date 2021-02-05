@@ -4,7 +4,7 @@ Donate link: https://www.oik-plugins.com/oik/oik-donate/
 Tags: performance, analysis
 Requires at least: 5.6
 Tested up to: 5.6
-Stable tag: 0.0.1
+Stable tag: 0.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -152,6 +152,9 @@ downloads.php - Extracts information about plugins from wordpress.org
 1. wp-top12 in action - no not really
 
 == Upgrade Notice ==
+= 0.0.2 = 
+Update for automatic filtering of requests. 
+
 = 0.0.1 =
 Use slog-bloat v0.0.1 to compare trace summary files for different server configurations.
 
@@ -159,6 +162,10 @@ Use slog-bloat v0.0.1 to compare trace summary files for different server config
 Use slog bloat instead of wp-top12 for server response performance analysis.
 
 == Changelog ==
+= 0.0.2 =
+* Changed: Apply slog bloat automatic filters if required,[github bobbingwide slog-bloat issues 3]
+* Changed: Automatically filter the GET 200 requests in the driver file,[github bobbingwide slog-bloat issues 2]
+
 = 0.0.1 = 
 * Changed: Change vt-driver.php default parameters
 * Changed: Pass fully qualified driver file name to vt-driver.php
