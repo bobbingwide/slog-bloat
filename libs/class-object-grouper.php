@@ -163,7 +163,7 @@ class Object_Grouper extends Object_base {
 		if ( isset( $object->{$this->key} ) ) {
 			$this->field_value = $object->{$this->key};
 		} else {
-			$this->field_value = " ";
+			$this->field_value = null;
 		}
 		if ( $this->subset ) {
 			$this->field_value = call_user_func( $this->subset, $this->field_value );

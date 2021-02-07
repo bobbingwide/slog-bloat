@@ -425,7 +425,7 @@ class Slog_Bloat_Admin {
 		BW_::p( 'Comparing results...' );
 		//print_r( $this->slog_files );
 		$contents = [];
-		$slogger=slog_admin_slog_reporter();
+		$slogger= $this->slog_admin_slog_reporter();
 		$slogger->set_request_type_filters( $this->slog_request_filters);
 		$slogger->set_http_response_filters( ['200', 'xxx' ] );
 		foreach ( $this->slog_files as $file ) {
@@ -516,6 +516,7 @@ class Slog_Bloat_Admin {
 	function get_reporter_options( $file ) {
 		$options['file'] = $this->get_downloads_filename( $file );
 		$options['report'] = 'elapsed';
+		$options['report_title'] = __('Elapsed', 'slog-bloat');
 		$options['type'] = 'line';
 		$options['display'] = 'percentage_count_accumulative';
 		$options['having'] = '';
@@ -547,6 +548,17 @@ class Slog_Bloat_Admin {
 			$td='td';
 		}
 		etag( 'table' );
+	}
+
+	function slog_admin_slog_reporter( ) {
+		static $slogger = null;
+		if ( !$slogger ) {
+			$slogger = new Slog_Reporter();
+		}
+		if ( !$slogger ) {
+			p( "Can't load Slog_Reporter");
+		}
+		return $slogger;
 	}
 
 }

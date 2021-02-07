@@ -38,10 +38,14 @@ function slog_bloat_plugin_loaded() {
 	add_action( "init", "slog_bloat_init", 22 );
 	//add_action( 'init', 'slog_bloat_block_init' );
 	add_action( "oik_loaded", "slog_bloat_oik_loaded" );
-	add_action( 'slog_loaded', 'slog_bloat_slog_loaded');
+	//add_action( 'slog_loaded', 'slog_bloat_slog_loaded');
 	//add_action( "oik_add_shortcodes", "slog_bloat_oik_add_shortcodes" );
 	//add_action( "admin_notices", "slog_bloat_activation" );
 	add_action( 'admin_menu', 'slog_bloat_admin_menu', 11 );
+	//add_action( 'admin_menu', 'slog_bloat_admin_menu', 11 );
+	add_action( 'admin_init', 'slog_bloat_options_init' );
+	add_action( 'admin_enqueue_scripts', 'slog_bloat_admin_enqueue_scripts' );
+
 }
 
 /**
@@ -50,8 +54,34 @@ function slog_bloat_plugin_loaded() {
  * Even though "oik" may not yet be loaded, let other plugins know that we've been loaded.
  */
 function slog_bloat_init() {
+	/**
+	 * Slog doesn't really need to do this since oik-trace should have already done it, if activated.
+	 * This is belt and braces.
+	 */
+	if ( !function_exists( 'oik_require' ) ) {
+		// check that oik v2.6 (or higher) is available.
+		$oik_boot = dirname( __FILE__ ). "/libs/oik_boot.php";
+		if ( file_exists( $oik_boot ) ) {
+			require_once( $oik_boot );
+
+		}
+	}
+	$libs = oik_lib_fallback( dirname( __FILE__ ) . '/libs' );
+	oik_init();
+	slog_bloat_enable_autoload();
+
 
 	do_action( "slog_bloat_loaded" );
+}
+
+function slog_bloat_enable_autoload() {
+	$lib_autoload=oik_require_lib( 'oik-autoload' );
+	if ( $lib_autoload && ! is_wp_error( $lib_autoload ) ) {
+		oik_autoload( true );
+	} else {
+		BW_::p( "oik-autoload library not loaded" );
+		gob();
+	}
 }
 
 /**
@@ -206,9 +236,16 @@ function slog_bloat_admin_menu() {
 }
 
 function slog_bloat_enqueue_styles() {
-	
+
 	wp_register_style( 'slog-bloat', oik_url( 'slog-bloat.css', 'slog-bloat' ), false );
 	wp_enqueue_style( 'slog-bloat' );
+}
+
+function slog_bloat_admin_enqueue_scripts() {
+	if ( function_exists( 'sb_chart_block_enqueue_scripts') ) {
+		sb_chart_block_enqueue_scripts();
+	}
+
 }
 
 /**

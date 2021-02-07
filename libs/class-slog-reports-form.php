@@ -157,7 +157,7 @@ class Slog_Reports_Form {
 		bw_flush();
 
 		//oik_require( 'class-slog-reporter.php', 'slog' );
-		$slogger = slog_admin_slog_reporter();
+		$slogger = $this->slog_bloat_admin->slog_admin_slog_reporter();
 		$slog_bloat_options = get_option( 'slog_bloat_options');
 		/*
 		print_r( $slog_bloat_options );
@@ -194,23 +194,63 @@ class Slog_Reports_Form {
 	 *
 	 */
 	function get_file_options() {
-		$dir = slog_admin_get_trace_files_directory();
-		$prefix = slog_admin_get_trace_summary_prefix();
+		$dir = $this->get_trace_files_directory();
+		$prefix = $this->get_trace_summary_prefix();
 		$mask = $prefix . '*';
 		//$mask = <input type="text" size="60" name="bw_summary_options[summary_file]" id="bw_summary_options[summary_file]" value="cwiccer" class="">
 		//echo $dir;
-		$trace_summary_files = slog_admin_get_file_list( $dir, $mask );
+		$trace_summary_files = $this->get_file_list( $dir, $mask );
 		$slog_bloat_dir = bobbcomp::bw_get_option( '_slog_downloads_dir', 'slog_bloat_options' );
 		if ( $slog_bloat_dir ) {
 			//echo $slog_bloat_dir;
 			$slog_bloat_dir = trailingslashit( $slog_bloat_dir );
-			$slog_bloat_files=slog_admin_get_file_list( $slog_bloat_dir, '*.*' );
+			$slog_bloat_files= $this->get_file_list( $slog_bloat_dir, '*.*' );
 			//print_r( $slog_bloat_files);
 		} else {
 			$slog_bloat_files = [];
 		}
 		$file_options = array_merge( $trace_summary_files, $slog_bloat_files );
 		return $file_options;
+	}
+
+	function get_file_list( $dir, $mask ) {
+		$file_options = [];
+		// Use the daily trace summary report directory.
+		// @TODO Use the daily trace report file prefix too
+		$files = glob(  $dir . $mask );
+		foreach ( $files as $file ) {
+			$basename = basename( $file );
+			$file_options[$file] = $basename;
+		}
+		arsort( $file_options );
+		//print_r( $files );
+		return $file_options;
+	}
+
+
+	/**
+	 *
+	 * @TODO Autoload the trace classes from oik-bwtrace/includes
+	 * @return null
+	 */
+	function get_trace_files_directory() {
+		oik_require( "includes/class-trace-logs.php", "oik-bwtrace" );
+		$trace_logs = new trace_logs();
+		$fq_trace_files_directory = $trace_logs->get_fq_trace_files_directory();
+		//echo $fq_trace_files_directory;
+		$this->summary_prefix = $trace_logs->get_summary_file_prefix();
+		return $fq_trace_files_directory;
+	}
+
+	/**
+	 * Gets the trace summary prefix.
+	 *
+	 * Assumes we've already called get_trace_files_directory.
+	 */
+	function get_trace_summary_prefix() {
+		$prefix = $this->summary_prefix;
+		//get_summary_file_prefix()
+		return $prefix;
 	}
 
 
@@ -276,7 +316,7 @@ class Slog_Reports_Form {
 
 	function display_table() {
 		//BW_::p( "Table" );
-		$slogger=slog_admin_slog_reporter();
+		$slogger=$this->slog_bloat_admin->slog_admin_slog_reporter();
 		if ( $slogger ) {
 			$content=$slogger->fetch_table();
 			$this->slog_admin_display_table( $content );
