@@ -17,6 +17,7 @@ class Slog_Reports_Form {
 	private $type;
 	private $display;
 	private $having;
+	private $filter_rows;
 
 	private $continue_processing;
 
@@ -41,6 +42,8 @@ class Slog_Reports_Form {
 		$this->type = bw_array_get( $_REQUEST, 'type', null );
 		$this->display = bw_array_get( $_REQUEST, 'display', null );
 		$this->having = bw_array_get( $_REQUEST, 'having', null );
+		$default_filter_rows = $this->slog_bloat_admin->get_slog_filter_rows();
+		$this->filter_rows = bw_array_get( $_REQUEST, '_slog_filter_rows', $default_filter_rows );
 	}
 
 	/**
@@ -74,6 +77,7 @@ class Slog_Reports_Form {
 		BW_::bw_select( 'type', __( 'Chart type', 'slog-bloat' ), $this->type, [ "#options" => $type_options ] );
 		BW_::bw_select( 'display', __( 'Display', 'slog-bloat' ), $this->display, [ "#options" => $display_options ] );
 		BW_::bw_textfield( 'having', 10, __( 'Having', 'slog'), $this->having );
+		bw_checkbox( '_slog_filter_rows', __('Automatically filter rows', 'slog-bloat'), $this->filter_rows );
 		// @TODO Add checkbox for automatic filtering.
 		// And display of automatic filtering values.
 		etag( "table" );
@@ -97,13 +101,17 @@ class Slog_Reports_Form {
 		//BW_::p("Admin chart");
 		$atts = $this->chart_atts();
 		$content = $this->chart_content();
-		if ( function_exists( 'sb_chart_block_shortcode') ) {
-			//sb_chart_block_shortcode( $atts, $content );
-			$output = sb_chart_block_shortcode( $atts, $content, 'chartjs');
-			e( $output );
+		if ( $content ) {
+			if ( function_exists( 'sb_chart_block_shortcode' ) ) {
+				//sb_chart_block_shortcode( $atts, $content );
+				$output=sb_chart_block_shortcode( $atts, $content, 'chartjs' );
+				e( $output );
+			} else {
+				BW_::p( 'Install and activate sb-chart-block' );
+				//echo 'Install and activate sb-chart-block';
+			}
 		} else {
-			BW_::p( 'Install and activate sb-chart-block');
-			//echo 'Install and activate sb-chart-block';
+			BW_::p( "No content for the chart");
 		}
 		bw_flush();
 	}
@@ -160,7 +168,7 @@ class Slog_Reports_Form {
 		 * [_slog_request_filters] => Array ( [0] => GET-FE [1] => GET-BOT-FE [2] => GET-CLI-FE [3] => GET-ADMIN [4] => GET-BOT-ADMIN [5] => GET-AJAX [6] => GET-BOT-AJAX [7] => GET-REST [8] => GET-CLI [9] => GET-spam [10] => HEAD-FE [11] => POST-FE [12] => POST-BOT-FE [13] => POST-CLI-FE [14] => POST-ADMIN [15] => POST-AJAX [16] => POST-REST [17] => POST-CLI [18] => POST-spam ) )
 		 */
 		if ( $slog_bloat_options ) {
-			$options['filter'] = $slog_bloat_options['_slog_filter_rows'];
+			$options['filter'] = $this->filter_rows;
 			if ( $options['filter']) {
 				p( "Filtering: " . implode( ',', $slog_bloat_options['_slog_request_filters'] ) );
 				$slogger->set_request_type_filters( $slog_bloat_options['_slog_request_filters'] );

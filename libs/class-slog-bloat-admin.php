@@ -91,6 +91,10 @@ class Slog_Bloat_Admin {
 		return $this->slog_download_file;
 	}
 
+	function get_slog_filter_rows() {
+		return $this->slog_filter_rows;
+	}
+
 
 	function process() {
 		add_filter( "bw_nav_tabs_slog-bloat", [ $this, "nav_tabs" ], 10, 2);
@@ -102,7 +106,7 @@ class Slog_Bloat_Admin {
 		// @TODO Convert to shared library?
 		//oik_require( "includes/bw-nav-tab.php" );
 		BW_::oik_menu_header( __( "Slog bloat", "slog-bloat" ), 'w100pc' );
-		$tab = BW_nav_tab::bw_nav_tabs( "compare", "Compare" );
+		$tab = BW_nav_tab::bw_nav_tabs( "reports", "Reports" );
 		do_action( "slog_bloat_nav_tab_$tab" );
 		oik_menu_footer();
 		bw_flush();
@@ -160,10 +164,10 @@ class Slog_Bloat_Admin {
 	 * @TODO - the filter functions should check global $pagenow before adding any tabs - to support multiple pages using this logic
 	 */
 	function nav_tabs(  $nav_tabs, $tab ) {
+		$nav_tabs['reports'] = 'Reports';
 		$nav_tabs['compare'] = 'Compare';
 		$nav_tabs['download'] = 'Download';
 		$nav_tabs['filter'] = 'Filter';
-		$nav_tabs['reports'] = 'Reports';
 		$nav_tabs['settings'] = 'Settings';
 		return $nav_tabs;
 	}
@@ -174,6 +178,7 @@ class Slog_Bloat_Admin {
 		$this->validate_slog_download_file();
 		$this->validate_slog_filtered_file();
 		$this->validate_slog_files();
+		$this->validate_slog_filter_rows();
 		$this->perform_action();
 
 	}
@@ -210,6 +215,11 @@ class Slog_Bloat_Admin {
 		$slog_filtered_file=bw_array_get( $_REQUEST, '_slog_filtered_file', 'filtered.csv' );
 		// @TODO perform some sort of validate_file() logic.
 		$this->slog_filtered_file=$slog_filtered_file;
+	}
+
+	function validate_slog_filter_rows() {
+		$slog_filter_rows = bw_array_get( $_REQUEST, '_slog_filter_rows', $this->slog_filter_rows );
+		$this->slog_filter_rows = $slog_filter_rows;
 	}
 
 	/**
