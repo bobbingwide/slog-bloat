@@ -3,13 +3,14 @@ Contributors: bobbingwide, vsgloik
 Donate link: https://www.oik-plugins.com/oik/oik-donate/
 Tags: performance, analysis
 Requires at least: 5.6
-Tested up to: 5.6
-Stable tag: 0.0.2
+Tested up to: 5.6.1
+Stable tag: 0.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
-Determine the effect of activating / deactivating a plugin on server side performance.
+Analyse the requests logged in the oik-bwtrace daily trace summary file.
+Use this to determine the effect of activating / deactivating a plugin on server side performance.
 
 The slog-bloat plugin is a generic solution to enable performance comparison
 of server responses with different server configurations.
@@ -18,6 +19,7 @@ Slog-bloat admin functions are:
 
 Function | Processing
 ------- | ----------
+Reports | Produce reports for a single daily trace summary file.
 Compare | Produce comparison charts for two or more trace summary files.
 Filter | Filter a daily trace summary file.
 Download | download a daily trace summary file from a host site
@@ -152,6 +154,9 @@ downloads.php - Extracts information about plugins from wordpress.org
 1. wp-top12 in action - no not really
 
 == Upgrade Notice ==
+= 0.1.0 =
+Slog-bloat v0.1.0 no longer requires slog.
+
 = 0.0.2 = 
 Update for automatic filtering of requests. 
 
@@ -162,6 +167,11 @@ Use slog-bloat v0.0.1 to compare trace summary files for different server config
 Use slog bloat instead of wp-top12 for server response performance analysis.
 
 == Changelog ==
+= 0.1.0 =
+* Changed: Implement Slog's reports in a Reports tab.
+* Changed: Add Filter rows checkbox to Reports. Make Reports the first tab.
+* Changed: Remove slog-bloat's dependency on slog,[github bobbingwide slog-bloat issues 4]
+
 = 0.0.2 =
 * Changed: Apply slog bloat automatic filters if required,[github bobbingwide slog-bloat issues 3]
 * Changed: Automatically filter the GET 200 requests in the driver file,[github bobbingwide slog-bloat issues 2]

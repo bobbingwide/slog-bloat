@@ -4,7 +4,7 @@ Plugin Name: slog-bloat
 Depends: oik-bwtrace, slog
 Plugin URI: https://bobbingwide.com/blog/oik-plugins/slog-bloat/
 Description: Determine the effect of activating / deactivating a plugin on server side performance.
-Version: 0.0.2
+Version: 0.1.0
 Author: bobbingwide
 Author URI: https://www.bobbingwide.com/about-bobbing-wide
 Text Domain: slog-bloat
