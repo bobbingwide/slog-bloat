@@ -28,6 +28,8 @@ class Slog_Bloat_Admin {
 	private $slog_request_filters;
 	private $slog_filter_rows;
 
+	private $reports_form;
+
 	function __construct() {
 		$this->get_options();
 	}
@@ -85,12 +87,17 @@ class Slog_Bloat_Admin {
 		return $filename;
 	}
 
+	function get_slog_download_file() {
+		return $this->slog_download_file;
+	}
+
 
 	function process() {
 		add_filter( "bw_nav_tabs_slog-bloat", [ $this, "nav_tabs" ], 10, 2);
 		add_action( 'slog_bloat_nav_tab_compare', [ $this, "nav_tab_compare"] );
 		add_action( 'slog_bloat_nav_tab_download', [ $this, "nav_tab_download"] );
 		add_action( 'slog_bloat_nav_tab_filter', [ $this, "nav_tab_filter"] );
+		add_action( 'slog_bloat_nav_tab_reports', [$this, "nav_tab_reports"] );
 		add_action( 'slog_bloat_nav_tab_settings', [ $this, "nav_tab_settings"] );
 		// @TODO Convert to shared library?
 		//oik_require( "includes/bw-nav-tab.php" );
@@ -117,6 +124,32 @@ class Slog_Bloat_Admin {
 		BW_::oik_box( null, null, __( "Form", "slog-bloat" ), [ $this, "filter_form" ] );
 	}
 
+	/**
+	 * Displays the slog reports form, chart and table as required.
+	 *
+	 * The Slog reports are implemented in a separate class.
+	 * If the Run report button hasn't been selected then the Chart and Table are not displayed.
+	 * These should also not be displayed if there's a problem during process_requests
+	 * or if the filtered file is empty.
+	 * So continue_processing should only be true when the action has been chosen.
+	 */
+
+	function nav_tab_reports() {
+		$this->reports_form = new Slog_Reports_Form( $this );
+		//$reports_form->display_chart();
+		//$reports_form->display_table();
+		$this->process_request();
+		//BW_::oik_box(null, null, __('Form', 'slog-bloat'), [$this, 'process_request'] );
+		BW_::oik_box( null, null, __( 'Form', 'slog-bloat'), [ $this->reports_form, 'display_form'] );
+
+		if ( $this->reports_form->get_continue_processing() ) {
+			if ( $this->reports_form->validate_file() ) {
+				BW_::oik_box( null, null, __( 'Chart', "slog-bloat" ), [ $this->reports_form, 'display_chart' ] );
+				BW_::oik_box( null, null, __( 'Table', "slog-bloat" ), [ $this->reports_form, 'display_table' ] );
+			}
+		}
+	}
+
 	function nav_tab_settings() {
 		BW_::oik_box( null, null, __( "Settings form", "slog-bloat" ), [ $this, "settings_form" ] );
 	}
@@ -130,6 +163,7 @@ class Slog_Bloat_Admin {
 		$nav_tabs['compare'] = 'Compare';
 		$nav_tabs['download'] = 'Download';
 		$nav_tabs['filter'] = 'Filter';
+		$nav_tabs['reports'] = 'Reports';
 		$nav_tabs['settings'] = 'Settings';
 		return $nav_tabs;
 	}
@@ -160,9 +194,15 @@ class Slog_Bloat_Admin {
 		$this->slog_summary_file=$slog_summary_file;
 	}
 
+	/**
+	 * Validates the _slog_download_file field
+	 *
+	 * Should use WordPresses validate_file() to avoid directory traversal.
+	 */
 	function validate_slog_download_file() {
 		$slog_download_file=bw_array_get( $_REQUEST, '_slog_download_file', 'bwtrace.vt.' . $this->ccyymmdd_date() );
 		// @TODO perform some sort of validate_file() logic.
+
 		$this->slog_download_file=$slog_download_file;
 	}
 
@@ -250,6 +290,15 @@ class Slog_Bloat_Admin {
 		bw_flush();
 	}
 
+	/**
+	 *
+	 */
+	function reports_form() {
+		$this->reports_form->get_form_fields();
+		//$this->reports_form->display_form();
+		//$this->reports_form->display_chart();
+		//$this->reports_form->display_table();
+	}
 
 	/**
 	 * Maintains the slog-bloat settings.
@@ -276,16 +325,20 @@ class Slog_Bloat_Admin {
 		bw_flush();
 	}
 
+	/**
+	 * Performs the chosen action
+	 *
+	 * @TODO Add nonce checking.
+	 */
 	function perform_action() {
-
 		$action=bw_array_get( $_REQUEST, '_slog_action', null );
-		//print_r( $action );
 
 		if ( $action ) {
 			$command=key( $action );
 			$action =bw_array_get( $action, '_slog_download', null );
-
-			BW_::p( "Performing:" . $action . $command );
+			if ( $action ) {
+				BW_::p( "Performing:" . $action . $command );
+			}
 			switch ( $command ) {
 				case '_slog_download':
 					$this->slog_download();
@@ -295,6 +348,9 @@ class Slog_Bloat_Admin {
 					break;
 				case '_slog_compare':
 					$this->slog_compare();
+					break;
+				case '_slog_reports':
+					$this->slog_reports();
 					break;
 				default:
 					BW_::p( "Action $action not yet implemented" );
@@ -379,6 +435,18 @@ class Slog_Bloat_Admin {
 				$this->display_chart( $content );
 			}
 		}
+	}
+
+	/**
+	 * Displays the
+	 */
+	function slog_reports() {
+		//BW_::p( "Slog reports go here");
+		//$this->reports_form = new Slog_Reports_Form( $this );
+		$this->reports_form->get_form_fields();
+
+		$this->reports_form->set_continue_processing();
+
 	}
 
 

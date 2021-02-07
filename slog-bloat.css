@@ -9,7 +9,8 @@
 #download_form .form-table td,
 #filter_form .form-table td,
 #settings_form .form-table td,
-#slog_admin_form .form-table td {
+#slog_admin_form .form-table td,
+#display_form .form-table td{
 	padding: 0px;
 }
 
