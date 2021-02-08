@@ -4,7 +4,7 @@ Donate link: https://www.oik-plugins.com/oik/oik-donate/
 Tags: performance, analysis
 Requires at least: 5.6
 Tested up to: 5.6.1
-Stable tag: 0.1.0
+Stable tag: 0.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -154,6 +154,9 @@ downloads.php - Extracts information about plugins from wordpress.org
 1. wp-top12 in action - no not really
 
 == Upgrade Notice ==
+= 0.1.1 =
+Fixes Notices in v0.1.0
+
 = 0.1.0 =
 Slog-bloat v0.1.0 no longer requires slog.
 
@@ -167,6 +170,10 @@ Use slog-bloat v0.0.1 to compare trace summary files for different server config
 Use slog bloat instead of wp-top12 for server response performance analysis.
 
 == Changelog ==
+= 0.1.1= 
+* Changed: Set the display title for the chart
+* Changed: Set the report title in the table heading
+
 = 0.1.0 =
 * Changed: Implement Slog's reports in a Reports tab.
 * Changed: Add Filter rows checkbox to Reports. Make Reports the first tab.

@@ -519,6 +519,7 @@ class Slog_Bloat_Admin {
 		$options['report_title'] = __('Elapsed', 'slog-bloat');
 		$options['type'] = 'line';
 		$options['display'] = 'percentage_count_accumulative';
+		$options['display_title'] = __('Percentage count accumulative', 'slog-bloat');
 		$options['having'] = '';
 		$options['filter'] = $this->slog_filter_rows;
 		return $options;
