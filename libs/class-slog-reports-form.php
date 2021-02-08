@@ -17,6 +17,7 @@ class Slog_Reports_Form {
 	private $report_title;
 	private $type;
 	private $display;
+	private $display_title;
 	private $having;
 	private $filter_rows;
 
@@ -136,6 +137,7 @@ class Slog_Reports_Form {
 		$options['report_title'] = $this->get_report_title();
 		$options['type'] = $this->type;
 		$options['display'] = $this->display;
+		$options['display_title'] = $this->get_display_title();
 		$options['having'] = $this->having;
 		$options['filter'] = false;
 
@@ -283,6 +285,16 @@ class Slog_Reports_Form {
 		return $report_title;
 	}
 
+	/**
+	 * Returns the display title.
+	 *
+	 * @return mixed
+	 */
+	function get_display_title() {
+		$display_title = bw_array_get( $this->get_display_options(), $this->display, $this->display );
+		//echo $display_title;
+		return $display_title;
+	}
 	/**
 	 * Lists the available Chart types.
 	 *

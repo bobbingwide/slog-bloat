@@ -37,11 +37,13 @@
 	  * @var string name of the report to run.
 	  */
 	 public $report;
+	 public $report_title;
 
 	 /**
 	  * @var string $display Information to display in the report
 	  */
 	 public $display;
+	 public $display_title;
 
 	 /**
 	  * @var string filter criteria callback method name or value?
@@ -128,8 +130,9 @@
     * percentage | Percentage of elapsed time of the requests in this grouping
     * accum | Accumulated percentage of the requests
     */
-	function set_display( $display ) {
+	function set_display( $display, $display_title=null ) {
 		$this->display = $display;
+		$this->display_title = $display_title ? $display_title : $display;
 	}
 
 	 /**
@@ -644,10 +647,10 @@
 	 * @return string
 	 */
 	function fetch_content() {
-		$this->narrator->narrate( 'Display', $this->display );
+		$this->narrator->narrate( 'Display', $this->display_title );
 		$content = $this->report_title;
 		$content .= ',';
-		$content .= $this->display;
+		$content .= $this->display_title;
 		$content .= "\n";
 		$content .= $this->grouper->asCSV_fields( $this->display );
 	 	return $content;

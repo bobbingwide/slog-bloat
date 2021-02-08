@@ -65,18 +65,16 @@ class Slog_Reporter {
 	 * Runs the report.
 	 *
 	 * Prior to calling run_report we have to set any automatic filters.
-	 * @param $options
-	 *
+	 * @param array $options Report options
 	 * @return string
 	 */
-
 	public function run_report( $options ) {
 		$this->parse_options( $options );
 		if ( $this->validate_file() ) {
 			$this->stats = new VT_stats();
 			$this->stats->set_file( $this->file );
 			$this->stats->set_report( $this->report, $this->report_title );
-			$this->stats->set_display( $this->display );
+			$this->stats->set_display( $this->display, $this->display_title );
 			if ( $this->having ) {
 				$this->stats->set_having( $this->having );
 			}
@@ -104,6 +102,7 @@ class Slog_Reporter {
 		$this->report_title = $options['report_title'];
 		$this->type = $options['type'];	// We probably don't need this.
 		$this->display = $options['display'];
+		$this->display_title = $options['display_title'];
 		$this->having = $options['having'];
 		$this->filter = $options['filter'];
 		//$this->validate_file();
