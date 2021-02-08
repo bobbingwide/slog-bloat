@@ -113,8 +113,9 @@
 	 	return $file_name;
 	 }
 
-	 function set_report( $report ) {
+	 function set_report( $report, $report_title=null ) {
 	 	$this->report = $report;
+	 	$this->report_title = $report_title ? $report_title : $report;
 	 }
 
 	/**

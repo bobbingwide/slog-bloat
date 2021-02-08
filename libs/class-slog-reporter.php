@@ -75,7 +75,7 @@ class Slog_Reporter {
 		if ( $this->validate_file() ) {
 			$this->stats = new VT_stats();
 			$this->stats->set_file( $this->file );
-			$this->stats->set_report( $this->report );
+			$this->stats->set_report( $this->report, $this->report_title );
 			$this->stats->set_display( $this->display );
 			if ( $this->having ) {
 				$this->stats->set_having( $this->having );

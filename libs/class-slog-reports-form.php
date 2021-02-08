@@ -14,6 +14,7 @@ class Slog_Reports_Form {
 	private $slog_bloat_admin;
 	private $file;
 	private $report;
+	private $report_title;
 	private $type;
 	private $display;
 	private $having;
@@ -132,6 +133,7 @@ class Slog_Reports_Form {
 		$options = [];
 		$options['file'] = $this->slog_bloat_admin->get_slog_download_file();
 		$options['report'] = $this->report;
+		$options['report_title'] = $this->get_report_title();
 		$options['type'] = $this->type;
 		$options['display'] = $this->display;
 		$options['having'] = $this->having;
@@ -227,8 +229,8 @@ class Slog_Reports_Form {
 		return $file_options;
 	}
 
-
 	/**
+	 * Returns the trace files directory.
 	 *
 	 * @TODO Autoload the trace classes from oik-bwtrace/includes
 	 * @return null
@@ -253,8 +255,6 @@ class Slog_Reports_Form {
 		return $prefix;
 	}
 
-
-
 	/**
 	 * Returns the report types.
 	 *
@@ -271,6 +271,16 @@ class Slog_Reports_Form {
 		             'elapsed' => __( 'Elapsed', 'slog')
 		];
 		return $reports;
+	}
+
+	/**
+	 * Returns the report title.
+	 *
+	 * @return mixed
+	 */
+	function get_report_title() {
+		$report_title = bw_array_get( $this->get_report_options(), $this->report, $this->report );
+		return $report_title;
 	}
 
 	/**
